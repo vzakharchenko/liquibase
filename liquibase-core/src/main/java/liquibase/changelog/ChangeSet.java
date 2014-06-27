@@ -267,7 +267,7 @@ public class ChangeSet implements Conditional, LiquibaseSerializable {
         this.comments = StringUtils.trimToNull(this.comments);
 
         String objectQuotingStrategyString = StringUtils.trimToNull(node.getChildValue(null, "objectQuotingStrategy", String.class));
-        this.objectQuotingStrategy = ObjectQuotingStrategy.LEGACY;
+        this.objectQuotingStrategy = ObjectQuotingStrategy.QUOTE_ONLY_RESERVED_WORDS;
         if (objectQuotingStrategyString != null) {
             this.objectQuotingStrategy = ObjectQuotingStrategy.valueOf(objectQuotingStrategyString);
         }
@@ -901,7 +901,8 @@ public class ChangeSet implements Conditional, LiquibaseSerializable {
                 "dbms",
                 "comment",
                 "changes",
-                "rollback"));
+                "rollback",
+                "objectQuotingStrategy"));
 
     }
 
@@ -976,6 +977,9 @@ public class ChangeSet implements Conditional, LiquibaseSerializable {
             } else {
                 return null;
             }
+        }
+        if (field.equals("objectQuotingStrategy")) {
+            return getObjectQuotingStrategy();
         }
 
         throw new UnexpectedLiquibaseException("Unexpected field request on changeSet: "+field);

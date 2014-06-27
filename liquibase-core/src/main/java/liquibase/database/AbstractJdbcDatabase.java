@@ -92,7 +92,7 @@ public abstract class AbstractJdbcDatabase implements Database {
     // most databases either lowercase or uppercase unuqoted objects such as table and column names.
     protected Boolean unquotedObjectsAreUppercased = null;
     // whether object names should be quoted
-    protected ObjectQuotingStrategy quotingStrategy = ObjectQuotingStrategy.LEGACY;
+    protected ObjectQuotingStrategy quotingStrategy = ObjectQuotingStrategy.QUOTE_ALL_OBJECTS;
 
     private final Set<String> reservedWords = new HashSet<String>();
 
@@ -950,12 +950,21 @@ public abstract class AbstractJdbcDatabase implements Database {
     public String escapeObjectName(String objectName, final Class<? extends DatabaseObject> objectType) {
         if (objectName != null) {
             objectName = objectName.trim();
-            if (mustQuoteObjectName(objectName, objectType)) {
-                return quoteObject(objectName, objectType);
-            } else if (quotingStrategy == ObjectQuotingStrategy.QUOTE_ALL_OBJECTS) {
-                return quoteObject(objectName, objectType);
+            String newObjectName=objectName;
+            if (!objectName.contains("(")){
+                if (mustQuoteObjectName(objectName, objectType)) {
+                    newObjectName= quoteObject(objectName, objectType);
+                }
+                if (quotingStrategy == ObjectQuotingStrategy.QUOTE_ALL_OBJECTS
+                        && Objects.equals(objectName,newObjectName)
+                        &&Objects.equals(Column.class,objectType)) {
+                    newObjectName= quoteObject(objectName, objectType);
+                }
+            } else {
+                return newObjectName;
             }
-            objectName = objectName.trim();
+
+            objectName = newObjectName.trim();
         }
         return objectName;
     }
