@@ -12,15 +12,15 @@ public class CreateTableStatement extends AbstractSqlStatement {
     private String tablespace;
     private String remarks;
     private List<String> columns = new ArrayList<String>();
-    private Set<AutoIncrementConstraint> autoIncrementConstraints = new HashSet<AutoIncrementConstraint>();
-    private Map<String, LiquibaseDataType> columnTypes = new HashMap<String, LiquibaseDataType>();
-    private Map<String, Object> defaultValues = new HashMap<String, Object>();
-    private Map<String, String> columnRemarks = new HashMap<String, String>();
+    private Set<AutoIncrementConstraint> autoIncrementConstraints = new LinkedHashSet<AutoIncrementConstraint>();
+    private Map<String, LiquibaseDataType> columnTypes = new LinkedHashMap<String, LiquibaseDataType>();
+    private Map<String, Object> defaultValues = new LinkedHashMap<String, Object>();
+    private Map<String, String> columnRemarks = new LinkedHashMap<String, String>();
 
     private PrimaryKeyConstraint primaryKeyConstraint;
-    private Set<String> notNullColumns = new HashSet<String>();
-    private Set<ForeignKeyConstraint> foreignKeyConstraints = new HashSet<ForeignKeyConstraint>();
-    private Set<UniqueConstraint> uniqueConstraints = new HashSet<UniqueConstraint>();
+    private Set<String> notNullColumns = new LinkedHashSet<String>();
+    private Set<ForeignKeyConstraint> foreignKeyConstraints = new LinkedHashSet<ForeignKeyConstraint>();
+    private Set<UniqueConstraint> uniqueConstraints = new LinkedHashSet<UniqueConstraint>();
 
 
     public CreateTableStatement(String catalogName, String schemaName, String tableName) {
