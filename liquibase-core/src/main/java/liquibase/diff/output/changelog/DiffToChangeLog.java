@@ -2,6 +2,7 @@ package liquibase.diff.output.changelog;
 
 import liquibase.CatalogAndSchema;
 import liquibase.change.Change;
+import liquibase.change.core.*;
 import liquibase.changelog.ChangeSet;
 import liquibase.configuration.GlobalConfiguration;
 import liquibase.configuration.LiquibaseConfiguration;
@@ -13,6 +14,7 @@ import liquibase.diff.output.DiffOutputControl;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.logging.LogFactory;
+import liquibase.precondition.core.*;
 import liquibase.serializer.ChangeLogSerializer;
 import liquibase.serializer.ChangeLogSerializerFactory;
 import liquibase.serializer.LiquibaseSerializable;
@@ -21,6 +23,7 @@ import liquibase.structure.DatabaseObject;
 import liquibase.structure.DatabaseObjectComparator;
 import liquibase.structure.core.*;
 import liquibase.util.StringUtils;
+import org.apache.commons.collections.CollectionUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
@@ -203,9 +206,75 @@ public class DiffToChangeLog {
             ChangeSet changeSet = new ChangeSet(generateId(), getChangeSetAuthor(), false, false, null, changeSetContext,
                     null, quotingStrategy, null);
             for (Change change : changes) {
-                changeSet.addChange(change);
+                NotPrecondition notPrecondition=new NotPrecondition();
+                AndPrecondition andPrecondition=new AndPrecondition();
+                notPrecondition.addNestedPrecondition(andPrecondition);
+
+                if (change instanceof CreateTableChange){
+                    CreateTableChange createTableChange= (CreateTableChange) change;
+                    TableExistsPrecondition tableExistsPrecondition=new TableExistsPrecondition();
+                    tableExistsPrecondition.setTableName(createTableChange.getTableName());
+                    andPrecondition.addNestedPrecondition(tableExistsPrecondition);
+
+                }
+                if (change instanceof CreateSequenceChange){
+                    CreateSequenceChange createSequenceChange= (CreateSequenceChange) change;
+                    SequenceExistsPrecondition sequenceExistsPrecondition=new SequenceExistsPrecondition();
+                    sequenceExistsPrecondition.setSequenceName(createSequenceChange.getSequenceName());
+                    andPrecondition.addNestedPrecondition(sequenceExistsPrecondition);
+                }
+                if (change instanceof CreateViewChange){
+                    CreateViewChange createViewChange= (CreateViewChange) change;
+                    ViewExistsPrecondition viewExistsPrecondition=new ViewExistsPrecondition();
+                    viewExistsPrecondition.setViewName(createViewChange.getViewName());
+                    andPrecondition.addNestedPrecondition(viewExistsPrecondition);
+                }
+                if (change instanceof AddForeignKeyConstraintChange){
+                    AddForeignKeyConstraintChange addForeignKeyConstraintChange= (AddForeignKeyConstraintChange) change;
+                    ForeignKeyExistsPrecondition foreignKeyExistsPrecondition=new ForeignKeyExistsPrecondition();
+                    foreignKeyExistsPrecondition.setForeignKeyTableName(addForeignKeyConstraintChange.getBaseTableName());
+                    foreignKeyExistsPrecondition.setForeignKeyName(addForeignKeyConstraintChange.getConstraintName());
+                    andPrecondition.addNestedPrecondition(foreignKeyExistsPrecondition);
+                }
+                if (change instanceof AddPrimaryKeyChange){
+                    AddPrimaryKeyChange addPrimaryKeyChange= (AddPrimaryKeyChange) change;
+                    addchangeset(addPrimaryKeyChange.getTableName(),changeSets,addPrimaryKeyChange);
+                } else
+                if (change instanceof CreateIndexChange){
+                    CreateIndexChange createIndexChange= (CreateIndexChange) change;
+                    addchangeset(createIndexChange.getTableName(),changeSets,createIndexChange);
+                } else
+                if (change instanceof InsertDataChange){
+                    InsertDataChange insertDataChange= (InsertDataChange) change;
+                    String tabeName=insertDataChange.getTableName();
+                    addchangeset(tabeName,changeSets,insertDataChange);
+                }
+                else {
+                    changeSet.addChange(change);
+                }
+
+                changeSet.setPreconditions(new PreconditionContainer());
+                changeSet.getPreconditions().addNestedPrecondition(notPrecondition);
+                changeSet.getPreconditions().setOnFail(PreconditionContainer.FailOption.MARK_RAN.toString());
             }
-            changeSets.add(changeSet);
+            if (CollectionUtils.isNotEmpty(changeSet.getChanges())){
+                changeSets.add(changeSet);
+            }
+
+        }
+    }
+
+    private void addchangeset( String tableName,List<ChangeSet> changeSets, Change change){
+        for (ChangeSet c:changeSets){
+            for(Change ch:c.getChanges()){
+                if (ch instanceof CreateTableChange){
+                    CreateTableChange createTableChange= (CreateTableChange) ch;
+                    if (Objects.equals(createTableChange.getTableName(),tableName)){
+                        c.addChange(change);
+                        break;
+                    }
+                }
+            }
         }
     }
 

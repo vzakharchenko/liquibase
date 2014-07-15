@@ -155,7 +155,10 @@ public class XMLChangeLogSerializer implements ChangeLogSerializer {
             nodeName = details.getShortName(namespace)+":"+nodeName;
         }
         Element node = currentChangeLogFileDOM.createElementNS(namespace, nodeName);
-
+        if (object instanceof ChangeSet){
+            ChangeSet changeSet= (ChangeSet) object;
+            setValueOnNode(node,"precondition",changeSet.getPreconditions(),object.getSerializableFieldType("precondition"));
+        }
         for (String field : object.getSerializableFields()) {
             setValueOnNode(node, field, object.getSerializableFieldValue(field), object.getSerializableFieldType(field));
         }
