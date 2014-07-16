@@ -99,43 +99,38 @@ public class JdbcDatabaseSnapshot extends DatabaseSnapshot {
 
                 @Override
 				public List<CachedRow> bulkFetch() throws SQLException, DatabaseException {
-                    if (database instanceof OracleDatabase) {
+                    if (database instanceof OracleDatabase) { //from https://community.oracle.com/thread/2563173
                         CatalogAndSchema catalogAndSchema = new CatalogAndSchema(catalogName, schemaName).customize(database);
 
                         String jdbcSchemaName = ((AbstractJdbcDatabase) database).getJdbcSchemaName(catalogAndSchema);
 
-                        String sql = "SELECT  " +
-                                "  NULL AS pktable_cat,  " +
-                                "  p.owner as pktable_schem,  " +
-                                "  p.table_name as pktable_name,  " +
-                                "  pc.column_name as pkcolumn_name,  " +
-                                "  NULL as fktable_cat,  " +
-                                "  f.owner as fktable_schem,  " +
-                                "  f.table_name as fktable_name,  " +
-                                "  fc.column_name as fkcolumn_name,  " +
-                                "  fc.position as key_seq,  " +
-                                "  NULL as update_rule,  " +
-                                "  decode (f.delete_rule, 'CASCADE', 0, 'SET NULL', 2, 1) as delete_rule,  " +
-                                "  f.constraint_name as fk_name,  " +
-                                "  p.constraint_name as pk_name,  " +
-                                "  decode(f.deferrable, 'DEFERRABLE', 5, 'NOT DEFERRABLE', 7, 'DEFERRED', 6) deferrability  " +
-                                "FROM " +
-                                "all_constraints p " +
-                                "INNER JOIN all_cons_columns pc " +
-                                "ON pc.owner = p.owner " +
-                                "AND pc.constraint_name = p.constraint_name " +
-                                "AND pc.table_name = p.table_name " +
-                                "INNER JOIN all_constraints f " +
-                                "ON p.owner = f.r_owner " +
-                                "AND p.constraint_name = f.r_constraint_name " +
-                                "INNER JOIN all_cons_columns fc " +
-                                "ON fc.owner = f.owner " +
-                                "AND fc.constraint_name = f.constraint_name " +
-                                "AND fc.table_name = f.table_name " +
-                                "AND fc.position = pc.position " +
-                                "WHERE p.owner = '" +jdbcSchemaName+"' "+
-                                "AND p.constraint_type in ('P', 'U') " +
-                                "AND f.constraint_type = 'R' " +
+                        String sql = "SELECT NULL AS pktable_cat,\n" +
+                                "       p.owner AS pktable_schem,\n" +
+                                "       p.table_name AS pktable_name,\n" +
+                                "       pc.column_name AS pkcolumn_name,\n" +
+                                "       NULL AS fktable_cat,\n" +
+                                "       f.owner AS fktable_schem,\n" +
+                                "       f.table_name AS fktable_name,\n" +
+                                "       fc.column_name AS fkcolumn_name,\n" +
+                                "       fc.position AS key_seq,\n" +
+                                "       NULL AS update_rule,\n" +
+                                "       decode (f.delete_rule, 'CASCADE', 0, 'SET NULL', 2, 1) AS delete_rule,\n" +
+                                "       f.constraint_name AS fk_name,\n" +
+                                "       p.constraint_name AS pk_name,\n" +
+                                "       decode(f.deferrable, 'DEFERRABLE', 5, 'NOT DEFERRABLE', 7, 'DEFERRED', 6) deferrability\n" +
+                                "FROM all_cons_columns fc\n" +
+                                "  INNER JOIN all_constraints f ON (fc.owner = '"+jdbcSchemaName+"'\n" +
+                                "                                   AND fc.owner = f.owner\n" +
+                                "                                   AND fc.constraint_name = f.constraint_name\n" +
+                                "                                   AND fc.table_name = f.table_name\n" +
+                                "                                   AND f.constraint_type = 'R')\n" +
+                                "  INNER JOIN all_cons_columns pc ON (pc.owner=f.r_owner\n" +
+                                "                                     AND pc.constraint_name=f.r_constraint_name)\n" +
+                                "  INNER JOIN all_constraints p ON (p.owner = pc.owner\n" +
+                                "                                   AND p.constraint_name = pc.constraint_name\n" +
+                                "                                   AND p.table_name = pc.table_name\n" +
+                                "                                   AND p.constraint_type IN ('P',\n" +
+                                "                                                             'U'))\n" +
                                 "ORDER BY fktable_schem, fktable_name, key_seq";
                         return executeAndExtract(sql, database);
                     } else {
@@ -307,28 +302,20 @@ public class JdbcDatabaseSnapshot extends DatabaseSnapshot {
                 protected List<CachedRow> oracleQuery(boolean bulk) throws DatabaseException, SQLException {
                     CatalogAndSchema catalogAndSchema = new CatalogAndSchema(catalogName, schemaName).customize(database);
 
-                    String sql = "select NULL AS TABLE_CAT, OWNER AS TABLE_SCHEM, 'NO' as IS_AUTOINCREMENT, cc.COMMENTS AS REMARKS,\n" +
-                            "-- ALL_TAB_COLUMNS.*\n" +
-                            "OWNER, TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_TYPE_MOD, DATA_TYPE_OWNER, " +
-                            // note: oracle reports DATA_LENGTH=4*CHAR_LENGTH when using VARCHAR( <N> CHAR ), thus BYTEs
-                            "DECODE( CHAR_USED, 'C',CHAR_LENGTH, DATA_LENGTH ) as DATA_LENGTH, " +
-                            "DATA_PRECISION, DATA_SCALE, NULLABLE, COLUMN_ID, DEFAULT_LENGTH, " +
-                            "DATA_DEFAULT, NUM_DISTINCT, LOW_VALUE, HIGH_VALUE, DENSITY, NUM_NULLS, " +
-                            "NUM_BUCKETS, LAST_ANALYZED, SAMPLE_SIZE, CHARACTER_SET_NAME, " +
-                            "CHAR_COL_DECL_LENGTH, GLOBAL_STATS, USER_STATS, AVG_COL_LEN, CHAR_LENGTH, " +
-                            "CHAR_USED, V80_FMT_IMAGE, DATA_UPGRADED, HISTOGRAM\n" +
-                            "FROM ALL_TAB_COLUMNS c " +
-                            "JOIN ALL_COL_COMMENTS cc USING ( OWNER, TABLE_NAME, COLUMN_NAME ) " +
-                            "WHERE OWNER='"+((AbstractJdbcDatabase) database).getJdbcSchemaName(catalogAndSchema)+"'";
+                    String sql = "select NULL AS TABLE_CAT, ALL_TAB_COLUMNS.OWNER AS TABLE_SCHEM, 'NO' as IS_AUTOINCREMENT, ALL_COL_COMMENTS.COMMENTS AS REMARKS, ALL_TAB_COLUMNS.* FROM ALL_TAB_COLUMNS, ALL_COL_COMMENTS " +
+                            "WHERE ALL_COL_COMMENTS.OWNER=ALL_TAB_COLUMNS.OWNER " +
+                            "AND ALL_COL_COMMENTS.TABLE_NAME=ALL_TAB_COLUMNS.TABLE_NAME " +
+                            "AND ALL_COL_COMMENTS.COLUMN_NAME=ALL_TAB_COLUMNS.COLUMN_NAME " +
+                            "AND ALL_TAB_COLUMNS.OWNER='"+((AbstractJdbcDatabase) database).getJdbcSchemaName(catalogAndSchema)+"'";
                     if (!bulk) {
                         if (tableName != null) {
-                            sql += " AND TABLE_NAME='"+database.escapeObjectName(tableName, Table.class)+"'";
+                            sql += " AND ALL_TAB_COLUMNS.TABLE_NAME='"+database.escapeObjectName(tableName, Table.class)+"'";
                         }
                         if (columnName != null) {
-                            sql += " AND COLUMN_NAME='"+database.escapeObjectName(columnName, Column.class)+"'";
+                            sql += " AND ALL_TAB_COLUMNS.COLUMN_NAME='"+database.escapeObjectName(columnName, Column.class)+"'";
                         }
                     }
-                    sql += " ORDER BY OWNER, TABLE_NAME, c.COLUMN_ID";
+                    sql += " ORDER BY COLUMN_ID";
 
                     return this.executeAndExtract(sql, database);
                 }
