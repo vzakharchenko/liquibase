@@ -39,10 +39,10 @@ public class FindForeignKeyConstraintsGeneratorOracle extends AbstractSqlGenerat
         sb.append("FRGN.TABLE_NAME ").append(FindForeignKeyConstraintsStatement.RESULT_COLUMN_FOREIGN_TABLE_NAME).append(", ");
         sb.append("FCOLS.COLUMN_NAME as ").append(FindForeignKeyConstraintsStatement.RESULT_COLUMN_FOREIGN_COLUMN_NAME).append(", ");
         sb.append("BASE.CONSTRAINT_NAME as ").append(FindForeignKeyConstraintsStatement.RESULT_COLUMN_CONSTRAINT_NAME).append(" ");
-        sb.append("FROM ALL_CONSTRAINTS BASE,");
-        sb.append("     ALL_CONSTRAINTS FRGN,");
-        sb.append("     ALL_CONS_COLUMNS BCOLS,");
-        sb.append("     ALL_CONS_COLUMNS FCOLS ");
+        sb.append("FROM user_constraints BASE,");
+        sb.append("     user_constraints FRGN,");
+        sb.append("     user_cons_columns BCOLS,");
+        sb.append("     user_cons_columns FCOLS ");
         sb.append("WHERE BASE.R_OWNER = FRGN.OWNER ");
         sb.append("AND BASE.R_CONSTRAINT_NAME = FRGN.CONSTRAINT_NAME ");
         sb.append("AND BASE.OWNER = BCOLS.OWNER ");

@@ -4,7 +4,7 @@
 
     <groupId>org.liquibase</groupId>
     <artifactId>liquibase-parent</artifactId>
-    <version>3.3.0-ECLM-SNAPSHOT</version>
+    <version>3.3.0-VZAKHARCHENKO-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Liquibase Parent Configuration</name>
@@ -52,6 +52,7 @@
         <maven.build.timestamp.format>E MMM dd hh:mm:ss zzz yyyy</maven.build.timestamp.format>
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipTests>true</skipTests>
     </properties>
 
     <modules>

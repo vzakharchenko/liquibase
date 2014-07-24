@@ -118,15 +118,15 @@ public class JdbcDatabaseSnapshot extends DatabaseSnapshot {
                                 "       f.constraint_name AS fk_name,\n" +
                                 "       p.constraint_name AS pk_name,\n" +
                                 "       decode(f.deferrable, 'DEFERRABLE', 5, 'NOT DEFERRABLE', 7, 'DEFERRED', 6) deferrability\n" +
-                                "FROM all_cons_columns fc\n" +
-                                "  INNER JOIN all_constraints f ON (fc.owner = '"+jdbcSchemaName+"'\n" +
+                                "FROM user_cons_columns fc\n" +
+                                "  INNER JOIN user_constraints f ON (fc.owner = '"+jdbcSchemaName+"'\n" +
                                 "                                   AND fc.owner = f.owner\n" +
                                 "                                   AND fc.constraint_name = f.constraint_name\n" +
                                 "                                   AND fc.table_name = f.table_name\n" +
                                 "                                   AND f.constraint_type = 'R')\n" +
-                                "  INNER JOIN all_cons_columns pc ON (pc.owner=f.r_owner\n" +
+                                "  INNER JOIN user_cons_columns pc ON (pc.owner=f.r_owner\n" +
                                 "                                     AND pc.constraint_name=f.r_constraint_name)\n" +
-                                "  INNER JOIN all_constraints p ON (p.owner = pc.owner\n" +
+                                "  INNER JOIN user_constraints p ON (p.owner = pc.owner\n" +
                                 "                                   AND p.constraint_name = pc.constraint_name\n" +
                                 "                                   AND p.table_name = pc.table_name\n" +
                                 "                                   AND p.constraint_type IN ('P',\n" +
@@ -495,7 +495,7 @@ public class JdbcDatabaseSnapshot extends DatabaseSnapshot {
                                 sql += " and TABLE_NAME='"+database.correctObjectName(tableName, Table.class)+"'";
                         }
                     } else if (database instanceof OracleDatabase) {
-                        sql = "select uc.constraint_name, uc.table_name,uc.status,uc.deferrable,uc.deferred,ui.tablespace_name from all_constraints uc, all_indexes ui " +
+                        sql = "select uc.constraint_name, uc.table_name,uc.status,uc.deferrable,uc.deferred,ui.tablespace_name from user_constraints uc, all_indexes ui " +
                                 "where uc.constraint_type='U' and uc.index_name = ui.index_name " +
                                 "and uc.owner = '" + jdbcSchemaName + "' " +
                                 "and ui.table_owner = '" + jdbcSchemaName + "' ";

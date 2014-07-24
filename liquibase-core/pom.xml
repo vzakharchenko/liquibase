@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-parent</artifactId>
-        <version>3.3.0-ECLM-SNAPSHOT</version>
+        <version>3.3.0-VZAKHARCHENKO-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

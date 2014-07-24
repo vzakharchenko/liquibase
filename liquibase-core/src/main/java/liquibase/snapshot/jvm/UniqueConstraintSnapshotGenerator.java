@@ -125,7 +125,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
                     "and TC.CONSTRAINT_NAME='" + database.correctObjectName(name, UniqueConstraint.class) + "'" +
                     "order by TC.CONSTRAINT_NAME";
         } else if (database instanceof OracleDatabase) {
-            sql = "select ucc.column_name from all_cons_columns ucc where ucc.constraint_name='"+database.correctObjectName(name, UniqueConstraint.class)+"' and ucc.owner='"+database.correctObjectName(schema.getCatalogName(), Catalog.class)+"' order by ucc.position";
+            sql = "select ucc.column_name from user_cons_columns ucc where ucc.constraint_name='"+database.correctObjectName(name, UniqueConstraint.class)+"' and ucc.owner='"+database.correctObjectName(schema.getCatalogName(), Catalog.class)+"' order by ucc.position";
         } else if (database instanceof DB2Database) {
             sql = "select k.colname as column_name from syscat.keycoluse k, syscat.tabconst t " +
                     "where k.constname = t.constname " +
@@ -296,7 +296,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
 //            schema = database.convertRequestedSchemaToSchema(schema);
 //
 //        try {
-//            String query = "select uc.constraint_name,uc.table_name,uc.status,uc.deferrable,uc.deferred,ui.tablespace_name from all_constraints uc, all_cons_columns ucc, all_indexes ui where uc.constraint_type='U' and uc.index_name = ui.index_name and uc.constraint_name = ucc.constraint_name and uc.owner = '" + schema + "' and ui.table_owner = '" + schema + "' and ucc.owner = '" + schema + "'";
+//            String query = "select uc.constraint_name,uc.table_name,uc.status,uc.deferrable,uc.deferred,ui.tablespace_name from user_constraints uc, user_cons_columns ucc, all_indexes ui where uc.constraint_type='U' and uc.index_name = ui.index_name and uc.constraint_name = ucc.constraint_name and uc.owner = '" + schema + "' and ui.table_owner = '" + schema + "' and ucc.owner = '" + schema + "'";
 //            statement = jdbcConnection.prepareStatement(query);
 //            rs = statement.executeQuery();
 //            while (rs.next()) {
@@ -340,7 +340,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
 //        PreparedStatement stmt = null;
 //        ResultSet rs = null;
 //        try {
-//            stmt = jdbcConnection.prepareStatement("select ucc.column_name from all_cons_columns ucc where ucc.constraint_name=? and ucc.owner=? order by ucc.position");
+//            stmt = jdbcConnection.prepareStatement("select ucc.column_name from user_cons_columns ucc where ucc.constraint_name=? and ucc.owner=? order by ucc.position");
 //            stmt.setString(1, constraint.getName());
 //            stmt.setString(2, schema);
 //            rs = stmt.executeQuery();
