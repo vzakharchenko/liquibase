@@ -230,6 +230,18 @@ public class ChangeSet implements Conditional, LiquibaseSerializable {
         return filePath;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
     public CheckSum generateCheckSum() {
         StringBuffer stringToMD5 = new StringBuffer();
         for (Change change : getChanges()) {
