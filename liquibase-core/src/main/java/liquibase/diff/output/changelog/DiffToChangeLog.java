@@ -1,6 +1,5 @@
 package liquibase.diff.output.changelog;
 
-import liquibase.CatalogAndSchema;
 import liquibase.change.Change;
 import liquibase.changelog.ChangeSet;
 import liquibase.configuration.GlobalConfiguration;
@@ -15,18 +14,14 @@ import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.logging.LogFactory;
 import liquibase.serializer.ChangeLogSerializer;
 import liquibase.serializer.ChangeLogSerializerFactory;
-import liquibase.serializer.LiquibaseSerializable;
 import liquibase.serializer.core.xml.XMLChangeLogSerializer;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.DatabaseObjectComparator;
-import liquibase.structure.core.*;
 import liquibase.util.StringUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DiffToChangeLog {
 
@@ -128,6 +123,11 @@ public class DiffToChangeLog {
     public void print(PrintStream out, ChangeLogSerializer changeLogSerializer) throws ParserConfigurationException, IOException, DatabaseException {
 
         List<ChangeSet> changeSets = generateChangeSets();
+
+        print(out, changeLogSerializer,changeSets);
+    }
+
+    public void print(PrintStream out, ChangeLogSerializer changeLogSerializer,List<ChangeSet> changeSets) throws ParserConfigurationException, IOException, DatabaseException {
 
         changeLogSerializer.write(changeSets, out);
 
