@@ -15,7 +15,7 @@ public class DoubleType  extends LiquibaseDataType {
         }
 
         if (database instanceof MySQLDatabase) {
-            return new DatabaseDataType("DOUBLE", getParameters());
+            return new DatabaseDataType("DOUBLE");
         }
         if (database instanceof DB2Database || database instanceof DerbyDatabase || database instanceof HsqlDatabase) {
             return new DatabaseDataType("DOUBLE");
