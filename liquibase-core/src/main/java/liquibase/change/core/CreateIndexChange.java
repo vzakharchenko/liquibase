@@ -6,8 +6,6 @@ import liquibase.snapshot.SnapshotGeneratorFactory;
 import liquibase.statement.SqlStatement;
 import liquibase.statement.core.CreateIndexStatement;
 import liquibase.structure.core.Index;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,13 +95,7 @@ public class CreateIndexChange extends AbstractChange implements ChangeWithColum
         for (ColumnConfig column : getColumns()) {
             columns.add(column.getName());
         }
-        if (CollectionUtils.isNotEmpty(getColumns())){
-            if (getColumns().size()==1){
-                if (BooleanUtils.toBoolean(getColumns().get(0).getConstraints().isPrimaryKey())) {
-                    return new SqlStatement[]{};
-                }
-            }
-        }
+
 	    return new SqlStatement[]{
                 new CreateIndexStatement(
 					    getIndexName(),
